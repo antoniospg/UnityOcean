@@ -390,7 +390,7 @@ namespace Ocean{
 
           //atualizar jacobiano com o valor de cada ponto
           float value = (1+der_x)*(1+der_z) - (der_zx)*(der_zx);
-          jacobian[i,j] =Mathf.Clamp01((1f-value));
+          jacobian[i,j] =Mathf.Clamp01((1f-value))*2;
           //atualizando textura
           foldingTable.SetPixel(i,j, new Color(jacobian[i,j], jacobian[i,j], jacobian[i,j], 1f));
           //calculando normal

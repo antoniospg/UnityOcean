@@ -6,6 +6,7 @@ using System.Threading;
 using UnityEngine;
 using Ocean;
 using FourierUtils;
+using  Diag = System.Diagnostics;
 
 public class CreateMesh : MonoBehaviour
 {
@@ -15,8 +16,10 @@ public class CreateMesh : MonoBehaviour
     float lambda;
     Vector3[] verts;
     int[] triangles;
-
+    Vector3[] normals;
+    Vector2[] uvs;
     volatile bool done = true;
+    Renderer m_Renderer;
 
     Mesh mesh;
     // Start is called before the first frame update
@@ -26,22 +29,25 @@ public class CreateMesh : MonoBehaviour
         GetComponent<MeshFilter>().mesh = mesh;
 
         N = 64;
-        L = 32;
-        lambda = -1f;
-        ocean_utils = new OceanUtils(0.0002f, N, L, new Vector2(32.0f,32.0f));
+        L = 128;
+        lambda = 1f;
+        ocean_utils = new OceanUtils(0.0002f, N, L, new Vector2(16.0f,16.0f), lambda);
+        m_Renderer = GetComponent<Renderer> ();
+        m_Renderer.material.EnableKeyword("_FresnelTable");
+        m_Renderer.material.EnableKeyword("_FoldingTable");
+        m_Renderer.material.SetTexture("_FresnelTable", ocean_utils.frTable);
     }
 
     // Update is called once per frame
     void Update()
     {
-      //se nao tiver terminado a execucao, n executa o codigo
       if(!done) return;
 
-      //iniciar novos calculos
       done = false;
 
       Nullable<float> time = Time.realtimeSinceStartup;
       RunOnPool(time);
+      //ThreadPool.QueueUserWorkItem(new WaitCallback(RunOnPool), time);
 
       /*
       byte[] bytes = hMap.EncodeToPNG();
@@ -49,23 +55,28 @@ public class CreateMesh : MonoBehaviour
       File.WriteAllBytes(Application.dataPath + "/../SavedScreen.png", bytes);
       */
 
-      verts = new Vector3[(N)*(N)];
-      int sign;
-			float[] signs = new float[]{ 1.0f, -1.0f };
+      m_Renderer.material.SetTexture("_FoldingTable", ocean_utils.foldingTable);
+      byte[] bytes = ocean_utils.foldingTable.EncodeToPNG();
 
+      File.WriteAllBytes(Application.dataPath + "/../SavedScreen.png", bytes);
+
+      verts = new Vector3[(N)*(N)];
+      normals = new Vector3[(N)*(N)];
+      uvs = new Vector2[(N)*(N)];
       //calcular vertices
       int i =0;
       for(int z = 0; z < N; z++){
         for(int x = 0; x< N; x++){
-          // calcular os sinais do displacement (não sei direito)
-          sign = (int)signs[(x + z) & 1];
-
           //calcualar coordenadas baseado no hMap e dispMap
-          float y_new = ocean_utils.hMap[x,z].real*sign;
-          float x_new = (float)(x-N/2)*L/N + lambda*ocean_utils.dispMap_x[x,z].real*sign;
-          float z_new = (float)(z-N/2)*L/N + lambda*ocean_utils.dispMap_z[x,z].real*sign;
+          float y_new = ocean_utils.hMap[x,z];
+          float x_new = (float)(x-N/2)*L/N + ocean_utils.dispMap[x,z].x;
+          float z_new = (float)(z-N/2)*L/N + ocean_utils.dispMap[x,z].y;
           //atualizar o valor do vertice
           verts[i] = new Vector3(x_new,y_new,z_new);
+          //atualizar valores das normais
+          normals[i] = ocean_utils.normalMap[x,z];
+          //atualizar valor do uv map
+          uvs[i] = new Vector2((float)x/((float)(N-1)), (float)z/((float)(N-1)));
           i++;
         }
       }
@@ -94,15 +105,16 @@ public class CreateMesh : MonoBehaviour
       mesh.Clear();
       mesh.vertices = verts;
       mesh.triangles = triangles;
-      mesh.RecalculateNormals();
+      mesh.normals = normals;
+      mesh.uv = uvs;
+      //mesh.RecalculateNormals();
+
     }
 
     void RunOnPool(object o){
       Nullable<float> time  = o as Nullable<float>;
-
       ocean_utils.Sample(time.Value);
       done = true;
-
     }
 
 }

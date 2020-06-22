@@ -97,7 +97,7 @@ namespace FourierUtils{
 
         return X;
       }
-
+      /*
       public static Complex[] iFFT(Complex[] x){
           int N = x.Length;
           Complex[] X = new Complex[N];
@@ -128,5 +128,54 @@ namespace FourierUtils{
           //COLOCAR O 1/N DPS
           return X;
         }
+        */
+
+        /* Performs a Bit Reversal Algorithm on a postive integer
+        * for given number of bits
+        * e.g. 011 with 3 bits is reversed to 110 */
+        public static int BitReverse(int n, int bits) {
+         int reversedN = n;
+         int count = bits - 1;
+
+         n >>= 1;
+         while (n > 0) {
+              reversedN = (reversedN << 1) | (n & 1);
+              count--;
+              n >>= 1;
+          }
+
+          return ((reversedN << count) & ((1 << bits) - 1));
+      }
+
+      public static void iFFT(Vector2[] buffer) {
+        int bits = (int)Mathf.Log(buffer.Length, 2);
+        for (int j = 1; j < buffer.Length; j++){
+          int swapPos = BitReverse(j, bits);
+          if (swapPos <= j) continue;
+          var temp = buffer[j];
+          buffer[j] = buffer[swapPos];
+          buffer[swapPos] = temp;
+        }
+
+        for (int N = 2; N <= buffer.Length; N <<= 1) {
+          for (int i = 0; i < buffer.Length; i += N) {
+            for (int k = 0; k < N / 2; k++) {
+
+              int evenIndex = i + k;
+              int oddIndex = i + k + (N / 2);
+              var even = buffer[evenIndex];
+              var odd = buffer[oddIndex];
+
+              float term = -2 * Mathf.PI * k / (float)N;
+              Vector2 exp = new Vector2(Mathf.Cos(term)*odd.x -  Mathf.Sin(term)*odd.y,
+                                        Mathf.Sin(term) * odd.x + Mathf.Cos(term)*odd.y);
+
+              buffer[evenIndex] = even + exp;
+              buffer[oddIndex] = even - exp;
+            }
+          }
+        }
+      }
+
   }
 }

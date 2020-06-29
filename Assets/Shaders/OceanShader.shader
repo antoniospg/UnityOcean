@@ -68,7 +68,7 @@
 	    fixed4 text = tex2D(_MainTex, IN.uv_MainTex*8);
 		
 	    //pick jacobian coefficients
-	    fixed4 foam = tex2D(_FoldingTable, IN.uv_MainTex);
+	    fixed4 foam = 2*tex2D(_FoldingTable, IN.uv_MainTex);
 	    fixed4 foamMask = text*foam;
 
 	    //calculate illumination effects

@@ -28,9 +28,9 @@ public class CreateMesh : MonoBehaviour
         mesh = new Mesh();
         GetComponent<MeshFilter>().mesh = mesh;
 
-        N = 64;
-        L = 128;
-        lambda = 1f;
+        N = 256;
+        L = 100;
+        lambda = 0.8f;
         ocean_utils = new OceanUtils(0.0002f, N, L, new Vector2(16.0f,16.0f), lambda);
         m_Renderer = GetComponent<Renderer> ();
         m_Renderer.material.EnableKeyword("_FresnelTable");

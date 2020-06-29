@@ -1,6 +1,6 @@
 <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
 
-# Realistic Ocean Simulation Silva
+# Realistic Ocean Simulation Silvaa
 ![overview](img/overview.png)
 
 **Figure 1:** Simulated water surface with a realistic surface shader in a grid of 256x256 and a total size of 100 meters. 

@@ -3,8 +3,7 @@
 
 ---
 
-
-<h1 id="realistic-ocean-simulation-silva">Realistic Ocean Simulation Silva</h1>
+<h1 id="realistic-ocean-simulation-silvaa">Realistic Ocean Simulation Silvaa</h1>
 <p><img src="img/overview.png" alt="overview"></p>
 <p><strong>Figure 1:</strong> Simulated water surface with a realistic surface shader in a grid of 256x256 and a total size of 100 meters.</p>
 <h2 id="introduction">Introduction</h2>

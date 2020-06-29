@@ -3,6 +3,7 @@
 
 ---
 
+
 <h1 id="realistic-ocean-simulation-silvaa">Realistic Ocean Simulation Silvaa</h1>
 <p><img src="img/overview.png" alt="overview"></p>
 <p><strong>Figure 1:</strong> Simulated water surface with a realistic surface shader in a grid of 256x256 and a total size of 100 meters.</p>
@@ -22,5 +23,6 @@ So, we can write the height field as a sum of time-dependent amplitudes, with co
 -7 1c-4.667 0-9.167-1.833-13.5-5.5S337 184 337 178c0-12.667 15.667-32.333 47-59
 H213l-171-1c-8.667-6-13-12.333-13-19 0-4.667 4.333-11.333 13-20h359
 c-16-25.333-24-45-24-59z"></path></svg></span></span></span></span></span></span></span></span></span></span></span></p>
+<p>gaiola</p>
 <h2 id="references">References</h2>
 

@@ -17,7 +17,13 @@ So, we can write the height field as a sum of time-dependent amplitudes, with co
 
 ![](img/eq1.png)
 
-$y = \vec{a}$
+$$
+M = \left( \begin{array}{ccc}
+x_{11} & x_{12} & \ldots \\
+x_{21} & x_{22} & \ldots \\
+\vdots & \vdots & \ldots \\
+\end{array} \right)
+$$
 
 gaiola
 

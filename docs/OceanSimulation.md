@@ -3,6 +3,10 @@
 
 ---
 
+<pre><code>&lt;script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"&gt;&lt;/script&gt;
+</code></pre>
+<pre><code>{% include lib/mathjax.html %}
+</code></pre>
 <h1 id="realistic-ocean-simulation-selva">Realistic Ocean Simulation Selva</h1>
 <p><img src="img/overview.png" alt="overview"></p>
 <p><strong>Figure 1:</strong> Simulated water surface with a realistic surface shader in a grid of 256x256 and a total size of 100 meters.</p>

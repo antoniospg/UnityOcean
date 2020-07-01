@@ -79,4 +79,4 @@ Material:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _Sky: {r: 1, g: 1, b: 1, a: 1}
-    - _Upwelling: {r: 0.22352941, g: 0.33333334, b: 0.4745098, a: 1}
+    - _Upwelling: {r: 0.11372549, g: 0.3137255, b: 0.5294118, a: 1}

@@ -28,7 +28,7 @@ public class CreateMesh : MonoBehaviour
         mesh = new Mesh();
         GetComponent<MeshFilter>().mesh = mesh;
 
-        N = 256;
+        N = 64;
         L = 100;
         lambda = 0.8f;
         ocean_utils = new OceanUtils(0.0002f, N, L, new Vector2(16.0f,16.0f), lambda);

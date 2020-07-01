@@ -156,25 +156,36 @@ $$
 $$
 The final result of applying the displacement vector in the origanal waves can be seen above:
 
-![](img/fresnel.gif)
+![](img/dispmap.gif)
+
 **Figure whatever**
 
 ## Ocean effects
 
 ### Foam 
-To calculate the foam, we need to know were the waves fold into themselves. A good way to measure this is calculating the jacobian of the displacement map, the jacobian tell us whenever a transformations is unique or not, when J = 0, it means that when we apply the displacement map to the original point of the grid, two points assume the same value. So the jacobian is a useful parameter to determine if the waves are foldind into themselves, primarly we want to know where J < 0, and apply the foam to these points, but for a more realistic result, we analise other values like J < 0,3. The calculation of the jacobian can be seen above and was made using central differentiation, just like the normals. 
+To calculate the foam, we need to know where the waves fold into themselves. A good way to measure this is calculating the jacobian of the displacement map, the jacobian tells us whenever a transformation is unique or not, when J = 0, it means that when we apply the displacement map to the original point of the grid, two points assume the same value. So the jacobian is a useful parameter to determine if the waves are folding into themselves, primarily we want to know where J < 0 and apply the foam to these points. 
 
 $$
 J_{xx} = 1 + \lambda\frac{\partial{\pmb{D}_x(\pmb{x})}}{\partial{x}}
 \\~\\
 J_{zz} = 1 + \lambda\frac{\partial{\pmb{D}_z(\pmb{x})}}{\partial{z}}
 \\~\\
- J_{xz} = J_{{zx}} = \lambda\frac{\partial{\pmb{D}_x(\pmb{x})}}{\partial{z}}
+ J_{xz} = J_{zx} = \lambda\frac{\partial{\pmb{D}_x(\pmb{x})}}{\partial{z}}
 \\~\\
 J(\pmb{x}) = J_{xx}J_{zz} - J_{xz}J_{zx}
 $$
 
-To paint the foam in the waves, we create a texture where each pixel correspondes to a value of the jacobian at that point, after that we multiply it by a foam texture and add to the ocean color.
+To apply the foam to the waves, first we need to calculate a folding map to serve as a mask to a custom foam texture. To create this mask, we first need to calculate a texture with the number of pixels equal to the number of points in the grid, that is, map the grid points into pixels, after that we calculate the intensity of the foam for every point, using the formula:
+
+$$
+I = clamp(0,1,J_{max} - J(\pmb{x}))
+$$
+
+Doing this will clamp the value $$ J_{max} - J(\pmb{x}) $$ between zero and one. Instead of drawing the foam when  J < 0, is better to choose a custom value as threshold, when $$J < J_{max} $$. So, we use the quantity $$ J_{max} - J(\pmb{x})$$ to estimate the intensity of the foam.
+In the figure bellow is a example of the folding map modulating a custom foam texture, note that the left image is the folding map, and the final value is multuplied by the ocean final color.
+![](img/folding.png) * ![](img/Foam.png) 
+
+**Figure**
 
 ### Illumination effects
 The minimal effects of illumination that needs to be simulated on a ocean surface are reflection and reffraction. These two effects are quantitative evaluated through the fresnel equations for s-polarized light, shown above:
@@ -202,4 +213,5 @@ R(\theta) = R_o + (1-R_o)(1-cos(\theta))^5
 $$
 
 ## References
+
 

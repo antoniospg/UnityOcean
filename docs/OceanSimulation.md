@@ -13,7 +13,7 @@ In the first part of this article, I will be explaining how to model and animate
 
 ## Statistical Wave Model
 Statistical models are based on the concept that ocean height h(**x**, t) is a random variable in each horizontal position **x** and time t.  They rely on the fact that we can decompose the height field h(**x**, t) into a sum of sines and cosines, the coefficients that multiply each of these functions are obtained through the Fourier transform, as well as the original height field can be obtained using the inverse transform. The computation uses Fast Fourier Transforms (ffts), which are a rapid method of evaluating the sum.
-So, we can write the height field as a sum of time-dependent amplitudes, with complex values. $ y = \vec{a} $
+So, we can write the height field as a sum of time-dependent amplitudes, with complex values. $$ y = \vec{a} $$, na selva
 
 $$
 h(\pmb{x}, t) = \sum_{\pmb{k}} \tilde h(\pmb{x},t).exp(i\pmb{k.x})

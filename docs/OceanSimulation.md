@@ -65,7 +65,9 @@ $$
 
 ## The FFT
 To compute the Fourier Transform, we need to calculate the summation in the previous section; this requires a complexity of O(n²) for a 1-D Fourier Transform, which is terrible, especially when we need to perform 2-D operations in a real-time system. The best approach is using the FFT(Fast Fourier Transform) algorithm, which implements the calculation with an O(nlog(n)) complexity for 1-D data. The algorithm is quite complicated, but essentially, for a RADIX-2 FFT, it splits recursively into half the data, performing calculations using the cyclic property of the n-th roots of unity, this way, avoiding unnecessary calculations. Above is a simple example of the algorithm for 1-D data with eight elements; the peculiar structure of this graph also gives the name the Butterfly algorithm to the FFT.
+
 ![](img/fftsample.gif) 
+
 **Figure 2:** Butterfly Algorithm.
 At this point, we can ask ourselves how big the grid should be? The answer is that it depends if you make these calculations on the GPU or CPU. On GPU, especially implementing it on a shader, the calculations can be made much faster due to the massive parallelization power of the GPU, for those, in a real-time system, a grid between 128x128 and 512x512 is enough. If you want to do this in the CPU, the grid's resolution can be quite limited. In my implementation, 64x64 was the best resolution I could get. 
 

@@ -1,6 +1,5 @@
 <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
 
-
 # Realistic Ocean Simulation
 ![overview](img/overview.png)
 
@@ -193,7 +192,7 @@ Doing this will clamp the value $$ J_{max} - J(\pmb{x}) $$ between zero and one.
 The figure below is an example of the folding map modulating a custom foam texture; note that the left image is the folding map, and the final value is multiplied by the ocean's final color.
 
 <img src="img/folding.png" alt="drawing" width="256" height = "256"/>
-<font size="10"> *</font> 
+<font size="1"> *</font> 
 <img src="img/Foam.png" alt="drawing" width="256" height = "256"/>
 
 **Figure**

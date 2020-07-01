@@ -14,7 +14,7 @@ This technique consists of doing an inverse Fourier transform on the frequency s
 Given the ocean height field function in the spatial frequency domain $$ \tilde h(\pmb{k}, t) $$, to find the original function in the spatial domain, we need to perform the inverse Fourier Transform, that is, evaluate the integral above (note that we supress the twiddle factor):
 
 $$
-\int_{-\infin}^{\infin}  \tilde h(\pmb{k},t).exp(i\pmb{k.x})d\pmb{k}
+\int_{-\infty}^{\infty}  \tilde h(\pmb{k},t).exp(i\pmb{k.x})d\pmb{k}
 $$
 
 To perform this calculation, its necessary to sample the signal in a discreate interval over a support domain. So the integral becomes a summation, expressed by:

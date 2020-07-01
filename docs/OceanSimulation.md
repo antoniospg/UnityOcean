@@ -1,11 +1,17 @@
 <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
 
+
 # Realistic Ocean Simulation Silvaa
 ![overview](img/overview.png)
 
+**Figure 1:** Simulated water surface with a realistic surface shader in a grid of 256x256 and a total size of 100 meters. 
+
+
+
+
 ## Introduction
 In this project, I will implement the statistical wave model from the equations in Tessendorf's paper[1] on simulating ocean water. The ocean rendering technique in this sample applies heightmap generation by summing a vast number of waves using the Fast Fourier Transform, with user-controllable size and resolution, and which can be tiled seamlessly over a larger domain.
-The main principle of Ocean rendering is that it can be modeled very well by thinking of it a sum of "infinite" waves at different amplitudes traveling in different directions. These waves aren't randomly chosen; it comes from using statistical-empirical models of the ocean, based on oceanographic research. In this article, I will show how to recreate and animate the ocean surface and add critical visual features like foam and illumination.
+The main principle of Ocean rendering is that it can be modeled very well by thinking of it a sum of "infinite" waves at different amplitudes traveling in different directions. These waves aren't randomly chosen; it comes from using statistical-empirical models of the ocean, based on oceanographic research. In this article, I will show how to recreate and animate the ocean surface and add additional visual features like foam and illumination.
 
 ## Waves and the Fourier Tansform
 This technique consists of doing an inverse Fourier transform on the frequency spectrum of the ocean height field to get the space domain representation of this same field, at each time t. For every frame, we calculate, for each pair (x,z) in a rectangular grid, the y component of this point, which represents the ocean height at that given location.
@@ -132,6 +138,12 @@ $$
 
 where $$ \xi_r $$ and $$ \xi_i $$ comes from random numbers of a gaussian distribuition with mean zero and standard deviation 1.
 
+After all of that, we can obtain the first version of the ocean surface:
+
+![](img/fisrt.png)
+
+**Figure**
+
 ## Additional calculations 
 ### Normals
 Due to illuminations effects, we need to calculate the normals of the ocean surface at each point, to do this, instead of performing another FFT, to save processing, we will simply do a central differentiation over the height field, in order to obtain the gradient $$ \epsilon(\pmb{x},t) = \nabla h(\pmb{x},t) $$ of the function. With the gradient, its easy to find the normals, using the relation above:
@@ -183,7 +195,7 @@ Doing this will clamp the value $$ J_{max} - J(\pmb{x}) $$ between zero and one.
 The figure below is an example of the folding map modulating a custom foam texture; note that the left image is the folding map, and the final value is multiplied by the ocean's final color.
 
 <img src="img/folding.png" alt="drawing" width="256" height = "256"/>
-*
+<font size="99"> *</font> 
 <img src="img/Foam.png" alt="drawing" width="256" height = "256"/>
 
 **Figure**
@@ -237,6 +249,4 @@ Applying these results to the ocean shader, we can get the result above:
 **Figure**
 
 ## References
-
-
-
+1. Tessendorf, Jerry. Simulating Ocean Water. _In SIGGRAPH 2002 Course Notes #9 (Simulating Nature: Realistic and Interactive Techniques)_, ACM Press.

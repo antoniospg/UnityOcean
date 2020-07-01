@@ -191,7 +191,7 @@ $$
 Doing this will clamp the value $$ J_{max} - J(\pmb{x}) $$ between zero and one. Instead of drawing the foam when  J < 0, is better to choose a custom value as threshold, when $$J < J_{max} $$. So, we use the quantity $$ J_{max} - J(\pmb{x})$$ to estimate the intensity of the foam.
 The figure below is an example of the folding map modulating a custom foam texture; note that the left image is the folding map, and the final value is multiplied by the ocean's final color.
 <font size="50"> 
-<img src="img/folding.png" alt="drawing" width="256" height = "256"/> * <img src="img/Foam.png" alt="drawing" width="256" height = "256"/>
+<img src="img/folding.png" alt="drawing" width="256" height = "256"/> X <img src="img/Foam.png" alt="drawing" width="256" height = "256"/>
 </font> 
 
 **Figure**

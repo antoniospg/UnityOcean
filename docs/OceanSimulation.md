@@ -3,8 +3,6 @@
 # Realistic Ocean Simulation Silvaa
 ![overview](img/overview.png)
 
-**Figure 1:** Simulated water surface with a realistic surface shader in a grid of 256x256 and a total size of 100 meters. 
-
 ## Introduction
 In this project, I will implement the statistical wave model from the equations in Tessendorf's paper[1] on simulating ocean water. The ocean rendering technique in this sample applies heightmap generation by summing a vast number of waves using the Fast Fourier Transform, with user-controllable size and resolution, and which can be tiled seamlessly over a larger domain.
 The main principle of Ocean rendering is that it can be modeled very well by thinking of it a sum of "infinite" waves at different amplitudes traveling in different directions. These waves aren't randomly chosen; it comes from using statistical-empirical models of the ocean, based on oceanographic research. In this article, I will show how to recreate and animate the ocean surface and add critical visual features like foam and illumination.
@@ -184,8 +182,8 @@ $$
 Doing this will clamp the value $$ J_{max} - J(\pmb{x}) $$ between zero and one. Instead of drawing the foam when  J < 0, is better to choose a custom value as threshold, when $$J < J_{max} $$. So, we use the quantity $$ J_{max} - J(\pmb{x})$$ to estimate the intensity of the foam.
 In the figure bellow is a example of the folding map modulating a custom foam texture, note that the left image is the folding map, and the final value is multuplied by the ocean final color.
 
-<img src="img/folding.png" alt="drawing" width="128" height = "128"/>
-<img src="(img/Foam.png" alt="drawing" width="128" height = "128"/>
+<img src="img/folding.png" alt="drawing" width="256" height = "256"/>
+<img src="img/Foam.png" alt="drawing" width="256" height = "256"/>
 
 **Figure**
 
@@ -215,4 +213,5 @@ R(\theta) = R_o + (1-R_o)(1-cos(\theta))^5
 $$
 
 ## References
+
 

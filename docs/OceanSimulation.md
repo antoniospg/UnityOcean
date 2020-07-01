@@ -6,19 +6,25 @@
 **Figure 1:** Simulated water surface with a realistic surface shader in a grid of 256x256 and a total size of 100 meters. 
 
 ## Introduction
-In this project, I will implement the well known statistical wave model from Tessendorf's paper[1] on simulating height fields for ocean waves.
-This approach recreates a piece of the ocean surface from a Fast Fourier Transform (FFT) prescription, with user-controllable size and resolution, and which can be tiled seamlessly over a larger domain.
-Each point contains a large sum of sine waves with different amplitudes and phases; however, these functions comes from using statistical-empirical models of the ocean, based on oceanographic research. 
-In the first part of this article, I will be explaining how to model and animate the structure of ocean surface, while in the second one how to create illumination effects and foam. 
+In this project, I will implement the statistical wave model from the equations in Tessendorf's paper[1] on simulating ocean water. The ocean rendering technique in this sample applies heightmap generation by summing a vast number of waves using the Fast Fourier Transform, with user-controllable size and resolution, and which can be tiled seamlessly over a larger domain.
+The main principle of Ocean rendering is that it can be modeled very well by thinking of it a sum of "infinite" waves at different amplitudes traveling in different directions. These waves aren't randomly chosen; it comes from using statistical-empirical models of the ocean, based on oceanographic research. In this article, I will show how to recreate and animate the ocean surface and add critical visual features like foam and illumination.
 
-## Statistical Wave Model
-Statistical models are based on the concept that ocean height h(**x**, t) is a random variable in each horizontal position **x** and time t.  They rely on the fact that we can decompose the height field h(**x**, t) into a sum of sines and cosines, the coefficients that multiply each of these functions are obtained through the Fourier transform, as well as the original height field can be obtained using the inverse transform. The computation uses Fast Fourier Transforms (ffts), which are a rapid method of evaluating the sum.
-So, we can write the height field as a sum of time-dependent amplitudes, with complex values. $$ y = \vec{a} $$, na selva
+## Waves and the Fourier Tansform
+This technique consists of doing an inverse Fourier transform on the frequency spectrum of the ocean height field to get the space domain representation of this same field, at each time frame. For every frame, we calculate, for each point (x,z) in a rectangular grid, the y component of this point, which represents the ocean height at that point.
+Given the ocean height field function in the spatial frequency domain $$ \tilde h(\pmb{k}, t) $$, to find the original function in the spatial domain, we need to perform the inverse Fourier Transform, that is, evaluate the integral above (note that we supress the twiddle factor):
+
+$$
+\int_{-\infin}^{\infin}  \tilde h(\pmb{k},t).exp(i\pmb{k.x})d\pmb{k}
+$$
+
+To perform this calculation, its necessary to sample the signal in a discreate interval over a support domain. So the integral becomes a summation, expressed by:
 
 $$
 h(\pmb{x}, t) = \sum_{\pmb{k}} \tilde h(\pmb{x},t).exp(i\pmb{k.x})
 $$
-with **k** defined as:
+
+where **k** is the wave vector, and can be defined as:
+
 $$
 \pmb{k} = (k_x, k_z)
 \\~\\
@@ -26,34 +32,64 @@ k_x = \frac{2\pi n}{L_x}
 \\~\\
 k_z = \frac{2\pi m}{L_z}
 $$
+
 where:
+
 $$
 -\frac{N}{2} \leq  n \leq \frac{N}{2}
 \\~\\
 -\frac{M}{2} \leq  m \leq \frac{M}{2}
 $$
+
 but, for most of our work, we deal with variables i and j in different domains:
+
 $$
 0 \leq i <N
 \\
 0 \leq j <M
 $$
+
 so, we can make the transformation:
+
 $$
 n = i - \frac{N}{2}
 \\~\\
 m = j - \frac{M}{2}
 $$
+
 The fft process generates the height field at discrete points:
+
 $$
  \pmb{x} = (\frac{nL_x}{N}, \frac{mL_z}{M})
 $$
 
+## The FFT
+To compute the Fourier Transform, we need to calculate the summation in the previous section; this requires a complexity of O(n²) for a 1-D Fourier Transform, which is terrible, especially when we need to perform 2-D operations in a real-time system. The best approach is using the FFT(Fast Fourier Transform) algorithm, which implements the calculation with an O(nlog(n)) complexity for 1-D data. The algorithm is quite complicated, but essentially, for a RADIX-2 FFT, it splits recursively into half the data, performing calculations using the cyclic property of the n-th roots of unity, this way, avoiding unnecessary calculations. Above is a simple example of the algorithm for 1-D data with eight elements; the peculiar structure of this graph also gives the name the Butterfly algorithm to the FFT.
+![](img/fftsample.gif) 
+**Figure 2:** Butterfly Algorithm.
+At this point, we can ask ourselves how big the grid should be? The answer is that it depends if you make these calculations on the GPU or CPU. On GPU, especially implementing it on a shader, the calculations can be made much faster due to the massive parallelization power of the GPU, for those, in a real-time system, a grid between 128x128 and 512x512 is enough. If you want to do this in the CPU, the grid's resolution can be quite limited. In my implementation, 64x64 was the best resolution I could get. 
 
-# Useful stuff
+
+
+
+
+$$
+P_h(\pmb{k}) = \langle |\tilde h^*(\pmb{k},t)|^2 \rangle
+$$
+
 $$
 P_h(\pmb{k}) = A\frac{exp(-1/(kL)^2)}{k^4} |\hat{\pmb{k}}.\hat{\pmb{v}}|^2
 $$
+
+
+
+$$
+h(\pmb{x}, t) = \sum_{\pmb{k}} \tilde h(\pmb{x},t).exp(i\pmb{k.x})
+$$
+
+
+
+# Useful stuff
 $$
 exp(-(kl)²)
 $$
@@ -62,9 +98,6 @@ $$
 $$
 $$
 \tilde h_o(\pmb{k}) = \frac{(\xi_r + i\xi_i)}{\sqrt{2}} \sqrt{P_h(\pmb{k})}
-$$
-$$
-P_h(\pmb{k}) = \langle |\tilde h^*(\pmb{k},t)|^2 \rangle
 $$
 $$
 \tilde h(\pmb{k},t) = \tilde h_o(\pmb{k})exp(i\omega(\pmb{k})t) + \tilde h_o^*(\pmb{-k})exp(i\omega(\pmb{k})t)

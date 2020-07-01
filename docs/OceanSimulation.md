@@ -180,31 +180,44 @@ I = clamp(0,1,J_{max} - J(\pmb{x}))
 $$
 
 Doing this will clamp the value $$ J_{max} - J(\pmb{x}) $$ between zero and one. Instead of drawing the foam when  J < 0, is better to choose a custom value as threshold, when $$J < J_{max} $$. So, we use the quantity $$ J_{max} - J(\pmb{x})$$ to estimate the intensity of the foam.
-In the figure bellow is a example of the folding map modulating a custom foam texture, note that the left image is the folding map, and the final value is multuplied by the ocean final color.
+The figure below is an example of the folding map modulating a custom foam texture; note that the left image is the folding map, and the final value is multiplied by the ocean's final color.
 
 <img src="img/folding.png" alt="drawing" width="256" height = "256"/>
+*
 <img src="img/Foam.png" alt="drawing" width="256" height = "256"/>
 
 **Figure**
 
 ### Illumination effects
-The minimal effects of illumination that needs to be simulated on a ocean surface are reflection and reffraction. These two effects are quantitative evaluated through the fresnel equations for s-polarized light, shown above:
+The minimal effects of illumination that need to be simulated on an ocean surface are reflection and refraction. In the Computer Graphics context, these two effects are quantitatively evaluated through the reflectivity R, and transmissivity T obtained using Fresnel equations for s-polarized light:
 
 $$
 R+T=1
 $$
 
 $$
-R(\theta_i, \theta_t) = \left(\frac{n_1cos(\theta_i) - n_2cos(\theta_t)}{n_1cos(\theta_i) + n_2cos(\theta_t)}\right)²
+R(\theta_i, \theta_t) = \left(\frac{n_1cos(\theta_i) - n_2cos(\theta_t)}{n_1cos(\theta_i) + n_2cos(\theta_t)}\right)^2
 $$
 
-R can be seen as a probability function for the reflected ray, because its on the interval [0,1), so we can make use of this by using this number to interpolate between the color of the ocean and the sky, that is:
+where:
+* $$ \theta_i $$ is the incident ray
+* $$ \theta_t $$ is the transmitted ray
+* $$ n_1 $$ is the index of refraction of air
+*  $$ n_2 $$ is the index of refraction of water
+
+$$ \theta_i $$ and $$ \theta_t $$ are related using the Snell's Law of refraction:
+
+$$ 
+n_1sin(\theta_i) = n_2 sin(\theta_t)
+ $$
+
+R and T are in the range [0,1], so they can be seen as the percentage of the contribution that reflection of light coming from the sky and refraction of light coming from the ocean volume have in the final color of the surface. As R is in the [0,1] range, we can use it as a parameter to interpolate between the Sky Color and Ocean Color. 
 
 $$
-C_f = lerp(SkyColor, OceanColor, R)
+C_f = lerp( OceanColor, SkyColor ,R)
 $$
 
-To compute this more efficiently, we use the Schlik aproximation, wich is:
+The calculations needed to get R for each point are too expensive, so, to compute the reflectivity R more efficiently, we use the Schlick approximation, which is:
 
 $$
 R_o = (\frac{n_1-n_2}{n_1+n_2})^2
@@ -212,6 +225,18 @@ R_o = (\frac{n_1-n_2}{n_1+n_2})^2
 R(\theta) = R_o + (1-R_o)(1-cos(\theta))^5
 $$
 
+Applying these results to the ocean shader, we can get the result above:
+
+![](img/fresnel.gif)
+
+**Figure**
+
+## Final Result
+![](img/final.gif)
+
+**Figure**
+
 ## References
+
 
 

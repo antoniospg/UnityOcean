@@ -69,6 +69,7 @@ To compute the Fourier Transform, we need to calculate the summation in the prev
 ![](img/fftsample.gif) 
 
 **Figure 2:** Butterfly Algorithm.
+
 At this point, we can ask ourselves how big the grid should be? The answer is that it depends if you make these calculations on the GPU or CPU. On GPU, especially implementing it on a shader, the calculations can be made much faster due to the massive parallelization power of the GPU, for those, in a real-time system, a grid between 128x128 and 512x512 is enough. If you want to do this in the CPU, the grid's resolution can be quite limited. In my implementation, 64x64 was the best resolution I could get. 
 
 

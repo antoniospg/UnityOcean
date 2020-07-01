@@ -10,7 +10,7 @@ In this project, I will implement the statistical wave model from the equations 
 The main principle of Ocean rendering is that it can be modeled very well by thinking of it a sum of "infinite" waves at different amplitudes traveling in different directions. These waves aren't randomly chosen; it comes from using statistical-empirical models of the ocean, based on oceanographic research. In this article, I will show how to recreate and animate the ocean surface and add critical visual features like foam and illumination.
 
 ## Waves and the Fourier Tansform
-This technique consists of doing an inverse Fourier transform on the frequency spectrum of the ocean height field to get the space domain representation of this same field, at each time frame. For every frame, we calculate, for each point (x,z) in a rectangular grid, the y component of this point, which represents the ocean height at that point.
+This technique consists of doing an inverse Fourier transform on the frequency spectrum of the ocean height field to get the space domain representation of this same field, at each time t. For every frame, we calculate, for each pair (x,z) in a rectangular grid, the y component of this point, which represents the ocean height at that given location.
 Given the ocean height field function in the spatial frequency domain $$ \tilde h(\pmb{k}, t) $$, to find the original function in the spatial domain, we need to perform the inverse Fourier Transform, that is, evaluate the integral above (note that we supress the twiddle factor):
 
 $$
@@ -63,6 +63,12 @@ $$
  \pmb{x} = (\frac{nL_x}{N}, \frac{mL_z}{M})
 $$
 
+Finally, expressing the summation of a 2-D data and using the values of i and j:
+
+$$
+h(\pmb{x}, t) =\sum_{i = 0}^{N-1} \sum_{j = 0}^{M-1} \tilde h(i - \frac{N}{2},j - \frac{M}{2},t)exp(\frac{ix\pi(2i-N)}{L_x}+(\frac{iz\pi(2j-N)}{L_z})
+$$
+
 ## The FFT
 To compute the Fourier Transform, we need to calculate the summation in the previous section; this requires a complexity of O(n²) for a 1-D Fourier Transform, which is terrible, especially when we need to perform 2-D operations in a real-time system. The best approach is using the FFT(Fast Fourier Transform) algorithm, which implements the calculation with an O(nlog(n)) complexity for 1-D data. The algorithm is quite complicated, but essentially, for a RADIX-2 FFT, it splits recursively into half the data, performing calculations using the cyclic property of the n-th roots of unity, this way, avoiding unnecessary calculations. Above is a simple example of the algorithm for 1-D data with eight elements; the peculiar structure of this graph also gives the name the Butterfly algorithm to the FFT.
 
@@ -70,7 +76,7 @@ To compute the Fourier Transform, we need to calculate the summation in the prev
 
 **Figure 2:** Butterfly Algorithm.
 
-At this point, we can ask ourselves how big the grid should be? The answer is that it depends if you make these calculations on the GPU or CPU. On GPU, especially implementing it on a shader, the calculations can be made much faster due to the massive parallelization power of the GPU, for those, in a real-time system, a grid between 128x128 and 512x512 is enough. If you want to do this in the CPU, the grid's resolution can be quite limited. In my implementation, 64x64 was the best resolution I could get. 
+At this point, we can ask ourselves how big the grid should be? The answer is that it depends if you make these calculations on the GPU or CPU. On GPU, especially implementing it on a shader, the calculations can be made much faster due to the massive parallelization power of the GPU, for those, in a real-time system, a grid between 128x128 is enough. If you want to do this in the CPU, the grid's resolution can be quite limited. In my implementation, 64x64 was the best resolution I could get. 
 
 ## Statistical Wave Model
 
@@ -79,8 +85,6 @@ The height field realization can be seen as a sum of sine with complex amplitude
 $$
 h(\pmb{x}, t) = \sum_{\pmb{k}} \tilde h(\pmb{x},t).exp(i\pmb{k.x})
 $$
-
-As observed in oceanographic research
 
 The expression of the frequencies is given by:
 
@@ -132,24 +136,28 @@ where $$ \xi_r $$ and $$ \xi_i $$ comes from random numbers of a gaussian distri
 
 ## Additional calculations 
 ### Normals
-Due to illuminations effects, we need to calculate the normals of the ocean surface at each point, to do this, instead of performing another FFT, to save processing time, we will simply do a central differentiation over the height field, in order to obtain the gradient $$ \epsilon(\pmb{x},t) = \nabla h(\pmb{x},t) $$ of the function. With the gradient, its easy to find the normals, using the relation above:
+Due to illuminations effects, we need to calculate the normals of the ocean surface at each point, to do this, instead of performing another FFT, to save processing, we will simply do a central differentiation over the height field, in order to obtain the gradient $$ \epsilon(\pmb{x},t) = \nabla h(\pmb{x},t) $$ of the function. With the gradient, its easy to find the normals, using the relation above:
 
 $$
 \hat{n}_s(\pmb{x},t) = \frac{\hat{y} - \epsilon(\pmb{x},t)}{\sqrt{1+\epsilon^2(\pmb{x},t)}}
 $$
 
 ### Horizontal Displacement
-At that point, our surface has rounded peak waves that just represent a calm ocean, in order to have sharpen peaks, its useful to do an aditional calculation of the horizontals displacements. Ocean waves aren't just made by oscilations in the y direction,  there exists oscillations in the horizontal directions to, to compute these, we need to project the spectrum in the z and x axis, that is, findind a horizontal displacement given by:
+At that point, our surface has rounded peak waves that cannot represent a real ocean, to have sharpened peaks, its useful to do an additional calculation of the horizontals displacements. Ocean waves aren't just made by oscillations in the y-direction,  there also exists oscillations in the horizontal directions, to compute these, we need to project the spectrum in the z and x-axis, that is, finding a horizontal displacement given by:
 
 $$
 \pmb{D}(\pmb{x},t) = \sum_{\pmb{k}}-i\frac{\pmb{k}}{k}\tilde h(\pmb{k},t)exp(i\pmb{k.x})
 $$
 
-With that in hand, now we just need to add this components to original position of the grid. The lambda factor is user-controllable and tells how much the horizontal displacement is relevant, or how sharpen the waves are. 
+With that in hand, we now need to add these components to the grid's original position. The lambda factor is user-controllable and tells how much the horizontal displacement is relevant, or how sharpened the waves are. 
 
 $$
 \pmb{x_f} = \pmb{x} + \lambda\pmb{D}(\pmb{x},t)
 $$
+The final result of applying the displacement vector in the origanal waves can be seen above:
+
+![](img/dispmap.gif)
+**Figure whatever**
 
 ## Ocean effects
 

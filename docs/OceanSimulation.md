@@ -156,7 +156,7 @@ $$
 $$
 The final result of applying the displacement vector in the origanal waves can be seen above:
 
-![](img/dispmap.gif)
+![](img/fresnel.gif)
 **Figure whatever**
 
 ## Ocean effects

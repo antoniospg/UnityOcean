@@ -67,7 +67,6 @@ $$
 To compute the Fourier Transform, we need to calculate the summation in the previous section; this requires a complexity of O(n²) for a 1-D Fourier Transform, which is terrible, especially when we need to perform 2-D operations in a real-time system. The best approach is using the FFT(Fast Fourier Transform) algorithm, which implements the calculation with an O(nlog(n)) complexity for 1-D data. The algorithm is quite complicated, but essentially, for a RADIX-2 FFT, it splits recursively into half the data, performing calculations using the cyclic property of the n-th roots of unity, this way, avoiding unnecessary calculations. Above is a simple example of the algorithm for 1-D data with eight elements; the peculiar structure of this graph also gives the name the Butterfly algorithm to the FFT.
 
 ![](img/fftsample.gif) 
-
 **Figure 2:** Butterfly Algorithm.
 
 At this point, we can ask ourselves how big the grid should be? The answer is that it depends if you make these calculations on the GPU or CPU. On GPU, especially implementing it on a shader, the calculations can be made much faster due to the massive parallelization power of the GPU, for those, in a real-time system, a grid between 128x128 and 512x512 is enough. If you want to do this in the CPU, the grid's resolution can be quite limited. In my implementation, 64x64 was the best resolution I could get. 
@@ -130,61 +129,68 @@ $$
 
 where $$ \xi_r $$ and $$ \xi_i $$ comes from random numbers of a gaussian distribuition with mean zero and standard deviation 1.
 
+## Additional calculations 
+### Normals
+Due to illuminations effects, we need to calculate the normals of the ocean surface at each point, to do this, instead of performing another FFT, to save processing time, we will simply do a central differentiation over the height field, in order to obtain the gradient $$ \epsilon(\pmb{x},t) = \nabla h(\pmb{x},t) $$ of the function. With the gradient, its easy to find the normals, using the relation above:
 
+$$
+\hat{n}_s(\pmb{x},t) = \frac{\hat{y} - \epsilon(\pmb{x},t)}{\sqrt{1+\epsilon^2(\pmb{x},t)}}
+$$
 
-
-# Useful stuff
-
-
-
+### Horizontal Displacement
+At that point, our surface has rounded peak waves that just represent a calm ocean, in order to have sharpen peaks, its useful to do an aditional calculation of the horizontals displacements. Ocean waves aren't just made by oscilations in the y direction,  there exists oscillations in the horizontal directions to, to compute these, we need to project the spectrum in the z and x axis, that is, findind a horizontal displacement given by:
 
 $$
 \pmb{D}(\pmb{x},t) = \sum_{\pmb{k}}-i\frac{\pmb{k}}{k}\tilde h(\pmb{k},t)exp(i\pmb{k.x})
 $$
+
+With that in hand, now we just need to add this components to original position of the grid. The lambda factor is user-controllable and tells how much the horizontal displacement is relevant, or how sharpen the waves are. 
+
 $$
 \pmb{x_f} = \pmb{x} + \lambda\pmb{D}(\pmb{x},t)
 $$
+
+## Ocean effects
+
+### Foam 
+To calculate the foam, we need to know were the waves fold into themselves. A good way to measure this is calculating the jacobian of the displacement map, the jacobian tell us whenever a transformations is unique or not, when J = 0, it means that when we apply the displacement map to the original point of the grid, two points assume the same value. So the jacobian is a useful parameter to determine if the waves are foldind into themselves, primarly we want to know where J < 0, and apply the foam to these points, but for a more realistic result, we analise other values like J < 0,3. The calculation of the jacobian can be seen above and was made using central differentiation, just like the normals. 
+
 $$
 J_{xx} = 1 + \lambda\frac{\partial{\pmb{D}_x(\pmb{x})}}{\partial{x}}
 \\~\\
 J_{zz} = 1 + \lambda\frac{\partial{\pmb{D}_z(\pmb{x})}}{\partial{z}}
 \\~\\
  J_{xz} = J_{{zx}} = \lambda\frac{\partial{\pmb{D}_x(\pmb{x})}}{\partial{z}}
-$$
-$$
+\\~\\
 J(\pmb{x}) = J_{xx}J_{zz} - J_{xz}J_{zx}
-\\
-J < 0
 $$
-$$
-\epsilon(\pmb{x},t) = \nabla h(\pmb{x},t)
-$$
-$$
-\hat{n}_s(\pmb{x},t) = \frac{\hat{y} - \epsilon(\pmb{x},t)}{\sqrt{1+\epsilon^2(\pmb{x},t)}}
-$$
-$$
-\hat{n}_r(\pmb{x},t) = \hat{n}_i - 2\hat{n}_s(\pmb{x},t)(\hat{n}_s(\pmb{x},t).\hat{n}_i)
-$$
-$$
-sin(\theta_i) = |\hat{n}_i\times\hat{n}_s|
-$$
-$$
-sin(\theta_t) = |\hat{n}_t\times\hat{n}_s|
-$$
-$$
-n_t sin(\theta_t) = n_i sin(\theta_i) 
-$$
+
+To paint the foam in the waves, we create a texture where each pixel correspondes to a value of the jacobian at that point, after that we multiply it by a foam texture and add to the ocean color.
+
+### Illumination effects
+The minimal effects of illumination that needs to be simulated on a ocean surface are reflection and reffraction. These two effects are quantitative evaluated through the fresnel equations for s-polarized light, shown above:
+
 $$
 R+T=1
 $$
+
 $$
-R(\hat{n}_i, \hat{n}_r) = \frac{1}{2}\{  \frac{sin^2(\theta_t+\theta_i) }{sin^2(\theta_t-\theta_i)} + \frac{tan^2(\theta_t+\theta_i) }{tan^2(\theta_t-\theta_i)} \}
+R(\theta_i, \theta_t) = \left(\frac{n_1cos(\theta_i) - n_2cos(\theta_t)}{n_1cos(\theta_i) + n_2cos(\theta_t)}\right)²
 $$
+
+R can be seen as a probability function for the reflected ray, because its on the interval [0,1), so we can make use of this by using this number to interpolate between the color of the ocean and the sky, that is:
+
+$$
+C_f = lerp(SkyColor, OceanColor, R)
+$$
+
+To compute this more efficiently, we use the Schlik aproximation, wich is:
+
 $$
 R_o = (\frac{n_1-n_2}{n_1+n_2})^2
-$$
-$$
+\\~\\
 R(\theta) = R_o + (1-R_o)(1-cos(\theta))^5
 $$
 
 ## References
+

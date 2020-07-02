@@ -191,7 +191,7 @@ $$
 
 Doing this will clamp the value $$ J_{max} - J(\pmb{x}) $$ between zero and one. Instead of drawing the foam when  J < 0, it is better to choose a custom value as a threshold, when $$J < J_{max} $$. So, we use the quantity $$ J_{max} - J(\pmb{x})$$ to estimate the intensity of the foam. Figure 5 shows how the surface behaves for different values of J.
 
-![](img/foldinggraph.jpg)
+![](img/jacobiangraph.jpg)
 
 **Figure  5:** Points with different values of J. [2]
 

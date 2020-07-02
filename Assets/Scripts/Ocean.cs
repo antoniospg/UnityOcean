@@ -18,6 +18,7 @@ namespace Ocean{
     private int N;
     private float L;
     private float lambda;
+    private float Jm;
 
     //matrizes pre calculadas
     public Vector2[,] ph0;
@@ -33,12 +34,13 @@ namespace Ocean{
     public Texture2D foldingTable;
     public Vector3 [,] normalMap;
 
-    public OceanUtils(float A, int N, float L, Vector2 Wind, float lambda){
+    public OceanUtils(float A, int N, float L, Vector2 Wind, float lambda, float Jm){
       this.A = A;
       this.N = N;
       this.L = L;
       this.Wind = Wind;
       this.lambda = lambda;
+      this.Jm = Jm;
 
       ph0 = new Vector2[N,N];
       ph0_conj = new Vector2[N,N];;
@@ -390,7 +392,7 @@ namespace Ocean{
 
           //atualizar jacobiano com o valor de cada ponto
           float value = (1+der_x)*(1+der_z) - (der_zx)*(der_zx);
-          jacobian[i,j] =Mathf.Clamp01((0.8f-value))*2;
+          jacobian[i,j] =Mathf.Clamp01((Jm-value))*2;
           //atualizando textura
           foldingTable.SetPixel(i,j, new Color(jacobian[i,j], jacobian[i,j], jacobian[i,j], 1f));
           //calculando normal

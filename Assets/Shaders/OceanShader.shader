@@ -52,12 +52,14 @@
 	float Fresnel(float3 V, float3 N)
 	{
 	    float costhetai = abs(dot(V,N));
+	    /*
 	    float n2 = 1.34;
 	    float n1 = 1;
 	    float f0 = (n2-n1)*(n2-n1)/((n2+n1)*(n2+n1));
 	    float fresnel  = f0+(1-f0)*pow((1-costhetai),5);
 	    return fresnel;
-	    //return tex2D(_FresnelTable, float2(costhetai,0.0)).a;
+	    */
+	    return tex2D(_FresnelTable, float2(costhetai,0.0)).a;
 	}
 
 

@@ -11,9 +11,14 @@ using  Diag = System.Diagnostics;
 public class CreateMesh : MonoBehaviour
 {
     OceanUtils ocean_utils;
-    int N;
-    int L;
-    float lambda;
+    //custom fields
+    public int N;
+    public int L;
+    public float A;
+    public float lambda;
+    public float Jm;
+    public Vector2 wind;
+
     Vector3[] verts;
     int[] triangles;
     Vector3[] normals;
@@ -27,11 +32,15 @@ public class CreateMesh : MonoBehaviour
     {
         mesh = new Mesh();
         GetComponent<MeshFilter>().mesh = mesh;
-
+        /*
         N = 64;
         L = 100;
         lambda = 0.8f;
-        ocean_utils = new OceanUtils(0.0002f, N, L, new Vector2(16.0f,16.0f), lambda);
+        Jm = 0.8f;
+        A = 0.0002f;
+        wind = new Vector2(16.0f,16.0f);
+        */
+        ocean_utils = new OceanUtils(A, N, L, wind, lambda, Jm);
         m_Renderer = GetComponent<Renderer> ();
         m_Renderer.material.EnableKeyword("_FresnelTable");
         m_Renderer.material.EnableKeyword("_FoldingTable");

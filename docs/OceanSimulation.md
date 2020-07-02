@@ -1,29 +1,30 @@
 <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
 
+
 # Realistic Ocean Simulation
 ![overview](img/overview.png)
 
 **Figure 1:** Simulated water surface with a realistic surface shader in a grid of 256x256 and a total size of 100 meters. 
 
 ## Introduction
-In this project, I will implement the statistical wave model from the equations in Tessendorf's paper[1] on simulating ocean water. The ocean rendering technique in this sample applies heightmap generation by summing a vast number of waves using the Fast Fourier Transform, with user-controllable size and resolution, and which can be tiled seamlessly over a larger domain.
-The main principle of Ocean rendering is that it can be modeled very well by thinking of it a sum of "infinite" waves at different amplitudes traveling in different directions. These waves aren't randomly chosen; it comes from using statistical-empirical models of the ocean, based on oceanographic research. In this article, I will show how to recreate and animate the ocean surface and add additional visual features like foam and illumination.
+In this project, I will implement the statistical wave model from the equations in Tessendorf's paper[1] on simulating ocean water. The ocean rendering technique in this article applies heightmap generation by summing a vast number of waves using the Fast Fourier Transform, with user-controllable size and resolution, and which can be tiled seamlessly over a larger domain.
+The main principle of Ocean rendering is that it can be modeled very well by thinking of it as a sum of "infinite" waves at different amplitudes traveling in different directions. These waves aren't randomly chosen; it comes from using statistical-empirical models of the ocean, based on oceanographic research. In this article, I will show how to recreate and animate the ocean surface and add additional visual features like foam and illumination.
 
 ## Waves and the Fourier Tansform
-This technique consists of doing an inverse Fourier transform on the frequency spectrum of the ocean height field to get the space domain representation of this same field, at each time t. For every frame, we calculate, for each pair (x,z) in a rectangular grid, the y component of this point, which represents the ocean height at that given location.
-Given the ocean height field function in the spatial frequency domain $$ \tilde h(\pmb{k}, t) $$, to find the original function in the spatial domain, we need to perform the inverse Fourier Transform, that is, evaluate the integral above (note that we supress the twiddle factor):
+This technique consists of doing an inverse Fourier transform on the frequency spectrum of the ocean height field to get the space domain representation of this same field, at each time t. For every frame, we calculate, for each pair (x,z) in a rectangular grid, the y component of this point, which represents the ocean height at that location.
+Given the ocean height field function in the spatial frequency domain $$ \tilde h(\pmb{k}, t) $$, to find the original function in the spatial domain, we need to perform the inverse Fourier Transform, that is, evaluate the integral above (note that we suppress the twiddle factor):
 
 $$
 \int_{-\infty}^{\infty}  \tilde h(\pmb{k},t).exp(i\pmb{k.x})d\pmb{k}
 $$
 
-To perform this calculation, its necessary to sample the signal in a discreate interval over a support domain. So the integral becomes a summation, expressed by:
+To perform this calculation, it's necessary to sample the signal in a discrete interval over a support domain. So the integral becomes a summation, expressed by:
 
 $$
 h(\pmb{x}, t) = \sum_{\pmb{k}} \tilde h(\pmb{x},t).exp(i\pmb{k.x})
 $$
 
-where **k** is the wave vector, and can be defined as:
+where **k** is the wave vector and can be defined as:
 
 $$
 \pmb{k} = (k_x, k_z)
@@ -63,20 +64,20 @@ $$
  \pmb{x} = (\frac{nL_x}{N}, \frac{mL_z}{M})
 $$
 
-Finally, expressing the summation of a 2-D data and using the values of i and j:
+Finally, expressing the summation of 2-D data and using the values of i and j:
 
 $$
 h(\pmb{x}, t) =\sum_{i = 0}^{N-1} \sum_{j = 0}^{M-1} \tilde h(i - \frac{N}{2},j - \frac{M}{2},t)exp(\frac{ix\pi(2i-N)}{L_x}+(\frac{iz\pi(2j-N)}{L_z})
 $$
 
 ## The FFT
-To compute the Fourier Transform, we need to calculate the summation in the previous section; this requires a complexity of O(n²) for a 1-D Fourier Transform, which is terrible, especially when we need to perform 2-D operations in a real-time system. The best approach is using the FFT(Fast Fourier Transform) algorithm, which implements the calculation with an O(nlog(n)) complexity for 1-D data. The algorithm is quite complicated, but essentially, for a RADIX-2 FFT, it splits recursively into half the data, performing calculations using the cyclic property of the n-th roots of unity, this way, avoiding unnecessary calculations. Above is a simple example of the algorithm for 1-D data with eight elements; the peculiar structure of this graph also gives the name the Butterfly algorithm to the FFT.
+To compute the Fourier Transform, we need to calculate the summation in the previous section; this requires a complexity of O(n²) for a 1-D Fourier Transform, which is terrible, especially when we need to perform 2-D operations in a real-time system. The best approach is using the FFT(Fast Fourier Transform) algorithm, which implements the calculation with an O(nlog(n)) complexity for 1-D data. The algorithm is quite complicated, but essentially, for a RADIX-2 FFT, it splits recursively into half the data, performing calculations using the cyclic property of the n-th roots of unity, this way, avoiding unnecessary calculations. Above is a simple example of the algorithm for 1-D data with eight elements; the peculiar structure of this graph also gives the name "Butterfly Algorithm" to the FFT.
 
 ![](img/fftsample.gif) 
 
 **Figure 2:** Butterfly Algorithm.
 
-At this point, we can ask ourselves how big the grid should be? The answer is that it depends if you make these calculations on the GPU or CPU. On GPU, especially implementing it on a shader, the calculations can be made much faster due to the massive parallelization power of the GPU, for those, in a real-time system, a grid between 128x128 is enough. If you want to do this in the CPU, the grid's resolution can be quite limited. In my implementation, 64x64 was the best resolution I could get. 
+At this point, we can ask ourselves how big the grid should be? The answer is that it depends if you make these calculations on the GPU or CPU. On GPU, especially implementing it on a compute shader, the calculations can be made much faster due to the massive parallelization power of the GPU, for those, in a real-time system, a grid between 128x128 is enough. If you want to do this in the CPU, the grid's resolution can be quite limited. In my implementation, 64x64 was the best resolution I could get. 
 
 ## Statistical Wave Model
 
@@ -98,15 +99,15 @@ where :
 * $$ \omega(\pmb{k}) $$ is the dispertion relation, given by: $$ \omega(k) = \sqrt{gk} $$.
  * k is the length of the wave vector.
 
-This equation is responsible to animate the waves over time, the complex conjugate term ensures breaking waves by propagating waves “to the left” and “to the right. The dispersion relation is a expression that relationates the wave vector to the frequency, and its based on real physics models of ocean water.
+This equation is responsible for animating the waves over time. The complex conjugate term ensures breaking waves by propagating waves "to the left" and "to the right. The dispersion relation is an expression that relates the wave vector to the frequency, and it's based on real physics models of ocean water.
 
-Now, we want to show how to get in the initial value of the spectrum, to do this, its require to use a oceanographic model to get the average squared mean of this variable, that is:
+Now, we want to show how to get in the initial value of the spectrum, to do this, it's required to use an oceanographic model to get the mean square of this variable, that is:
  
 $$
 P_h(\pmb{k}) = \langle |\tilde h^*(\pmb{k},t)|^2 \rangle
 $$
 
-For $$ P_h $$, we will choose a semi-emphyrical model obtainded from oceanographic research known as Phillips Spectrum, that is given by:
+For $$ P_h $$, we will choose a semi-empirical model obtained from oceanographic research known as Phillips Spectrum, that is given by:
 
 $$
 P_h(\pmb{k}) = A\frac{exp(-1/(kL)^2)}{k^4} |\hat{\pmb{k}}.\hat{\pmb{v}}|^2
@@ -114,7 +115,7 @@ P_h(\pmb{k}) = A\frac{exp(-1/(kL)^2)}{k^4} |\hat{\pmb{k}}.\hat{\pmb{v}}|^2
 L= \frac{v²}{g}
 $$
 
-if you want to supress waves smaller that a small length l << L, just add this multiplicative factor to the Phillips Spectrum:
+if you want to suppress waves smaller than a small length l << L, just add this multiplicative factor to the Phillips Spectrum:
 
 $$
 exp(-(kl)²)
@@ -122,34 +123,34 @@ $$
 
 where:
 * A is a numeric constant.
-* **k** is the wave vector
-* g is the gravitational constant
-* **v** is the wind speed
+* **k** is the wave vector.
+* g is the gravitational constant.
+* **v** is the wind speed.
 
-It is observed that realizations of water wave height fields are gaussian random numbers with spatial spectra of a prescribed form. This is most efficiently accomplished directly in the fourier domain. The fourier amplitudes of a wave height field can be produced by:
+It is observed that realizations of water wave height fields are Gaussian random numbers with spatial spectra of a prescribed form. This is most efficiently accomplished directly in the Fourier domain. The Fourier amplitudes of a wave height field can be produced by:
 
 $$
 \tilde h_o(\pmb{k}) = \frac{(\xi_r + i\xi_i)}{\sqrt{2}} \sqrt{P_h(\pmb{k})}
 $$
 
-where $$ \xi_r $$ and $$ \xi_i $$ comes from random numbers of a gaussian distribuition with mean zero and standard deviation 1.
+where $$ \xi_r $$ and $$ \xi_i $$ comes from random numbers of a gaussian distribution with mean zero and standard deviation 1.
 
 After all of that, we can obtain the first version of the ocean surface:
 
 ![](img/fisrt.gif)
 
-**Figure**
+**Figure 3:** First simulation using just the height field.
 
 ## Additional calculations 
 ### Normals
-Due to illuminations effects, we need to calculate the normals of the ocean surface at each point, to do this, instead of performing another FFT, to save processing, we will simply do a central differentiation over the height field, in order to obtain the gradient $$ \epsilon(\pmb{x},t) = \nabla h(\pmb{x},t) $$ of the function. With the gradient, its easy to find the normals, using the relation above:
+Due to illuminations effects, we need to calculate the normals of the ocean surface at each point, to do this, instead of performing another FFT, to save processing, we will simply do a central differentiation over the height field, to obtain the gradient $$ \epsilon(\pmb{x},t) = \nabla h(\pmb{x},t) $$ of the function. With the gradient, it's easy to find the normals, using the relation above:
 
 $$
 \hat{n}_s(\pmb{x},t) = \frac{\hat{y} - \epsilon(\pmb{x},t)}{\sqrt{1+\epsilon^2(\pmb{x},t)}}
 $$
 
 ### Horizontal Displacement
-At that point, our surface has rounded peak waves that cannot represent a real ocean, to have sharpened peaks, its useful to do an additional calculation of the horizontals displacements. Ocean waves aren't just made by oscillations in the y-direction,  there also exists oscillations in the horizontal directions, to compute these, we need to project the spectrum in the z and x-axis, that is, finding a horizontal displacement given by:
+At that point, our surface has rounded peak waves that cannot represent a real ocean, to make sharpened peaks, it's useful to do an additional calculation of the horizontals displacements. Ocean waves aren't just caused by oscillations in the y-direction,  there also exists oscillations in the horizontal directions, to compute these, we need to project the spectrum in the z and x-axis, that is, finding a horizontal displacement given by:
 
 $$
 \pmb{D}(\pmb{x},t) = \sum_{\pmb{k}}-i\frac{\pmb{k}}{k}\tilde h(\pmb{k},t)exp(i\pmb{k.x})
@@ -161,11 +162,11 @@ $$
 \pmb{x_f} = \pmb{x} + \lambda\pmb{D}(\pmb{x},t)
 $$
 
-The final result of applying the displacement vector in the origanal waves can be seen above:
+The final result of applying the displacement vector in the original waves can be seen above:
 
 ![](img/dispmap.gif)
 
-**Figure whatever**
+**Figure 4:** Simulation using horizontal displacement.
 
 ## Ocean effects
 
@@ -182,19 +183,24 @@ J_{zz} = 1 + \lambda\frac{\partial{\pmb{D}_z(\pmb{x})}}{\partial{z}}
 J(\pmb{x}) = J_{xx}J_{zz} - J_{xz}J_{zx}
 $$
 
-To apply the foam to the waves, first we need to calculate a folding map to serve as a mask to a custom foam texture. To create this mask, we first need to calculate a texture with the number of pixels equal to the number of points in the grid, that is, map the grid points into pixels, after that we calculate the intensity of the foam for every point, using the formula:
+To apply the foam to the waves, we need to calculate a folding map to serve as a mask to a custom foam texture. To create this mask, we first need to calculate a texture with the number of pixels equal to the number of points in the grid. That is, map the grid points into pixels. After that, we calculate the intensity of the foam for every position, using the formula:
 
 $$
 I = clamp(0,1,J_{max} - J(\pmb{x}))
 $$
 
-Doing this will clamp the value $$ J_{max} - J(\pmb{x}) $$ between zero and one. Instead of drawing the foam when  J < 0, is better to choose a custom value as threshold, when $$J < J_{max} $$. So, we use the quantity $$ J_{max} - J(\pmb{x})$$ to estimate the intensity of the foam.
+Doing this will clamp the value $$ J_{max} - J(\pmb{x}) $$ between zero and one. Instead of drawing the foam when  J < 0, it is better to choose a custom value as a threshold, when $$J < J_{max} $$. So, we use the quantity $$ J_{max} - J(\pmb{x})$$ to estimate the intensity of the foam. Figure 5 shows how the surface behaves for different values of J.
+
+![](img/foldinggraph.jpg)
+
+**Figure  5:** Points with different values of J. [2]
+
 The figure below is an example of the folding map modulating a custom foam texture; note that the left image is the folding map, and the final value is multiplied by the ocean's final color.
 <font size="50"> 
 <img src="img/folding.png" alt="drawing" width="256" height = "256"/> X <img src="img/Foam.png" alt="drawing" width="256" height = "256"/>
 </font> 
 
-**Figure**
+**Figure 6:** Folding map modulating a custom foam texture.
 
 ### Illumination effects
 The minimal effects of illumination that need to be simulated on an ocean surface are reflection and refraction. In the Computer Graphics context, these two effects are quantitatively evaluated through the reflectivity R, and transmissivity T obtained using Fresnel equations for s-polarized light:
@@ -208,10 +214,10 @@ R(\theta_i, \theta_t) = \left(\frac{n_1cos(\theta_i) - n_2cos(\theta_t)}{n_1cos(
 $$
 
 where:
-* $$ \theta_i $$ is the incident ray
-* $$ \theta_t $$ is the transmitted ray
-* $$ n_1 $$ is the index of refraction of air
-*  $$ n_2 $$ is the index of refraction of water
+* $$ \theta_i $$ is the incident ray.
+* $$ \theta_t $$ is the transmitted ray.
+* $$ n_1 $$ is the index of refraction of air.
+*  $$ n_2 $$ is the index of refraction of water.
 
 $$ \theta_i $$ and $$ \theta_t $$ are related using the Snell's Law of refraction:
 
@@ -237,12 +243,16 @@ Applying these results to the ocean shader, we can get the result above:
 
 ![](img/fresnel.gif)
 
-**Figure**
+**Figure 7:** Simulation using illumination effects.
 
-## Final Result
+## Final result and future work
 ![](img/final.gif)
 
-**Figure**
+**Figure 8**: Final result, rendered in a 64x64 grid.
+
+For future work, I want to increase the number of points in the grid. As can be seen in Figure 8, the project was entirely made using a 64x64 grid; despite looking good, the result its much better in high-resolution, like in Figure 1. To achieve this, all the calculations, especially the FFTs, need to be done on GPU, with a compute shader, to use its high parallelization power.
 
 ## References
 1. Tessendorf, Jerry. Simulating Ocean Water. _In SIGGRAPH 2002 Course Notes #9 (Simulating Nature: Realistic and Interactive Techniques)_, ACM Press.
+
+2. CGDC 2015, Ocean simulation and rendering in War Thunder

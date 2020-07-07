@@ -2,6 +2,7 @@
 
 
 
+
 # Realistic Ocean Simulation
 ![overview](img/overview.png)
 
@@ -13,7 +14,7 @@ The main principle of Ocean rendering is that it can be modeled very well by thi
 
 ## Waves and the Fourier Tansform
 This technique consists of writing an inverse Fourier transform on the Fourier domain of the ocean height field to get the space domain representation of this same field, at each time t. For every frame we calculate, for each pair (x,z) in a rectangular grid the y component of this point, which represents the ocean height at that location.
-Given the ocean height field function in the spatial frequency domain $$ \tilde h(\pmb{k}, t) $$, to find the original function in the spatial domain, we need to perform the inverse Fourier Transform, that is, evaluate the integral above (note that we suppress the twiddle factor):
+Given the ocean height field function in the spatial frequency domain $$ \tilde h(\pmb{k}, t) $$, to find the original function in the spatial domain, we need to perform the inverse Fourier Transform, that is, evaluate the integral above:
 
 $$
 \int_{-\infty}^{\infty}  \tilde h(\pmb{k},t).exp(i\pmb{k.x})d\pmb{k}

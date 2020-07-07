@@ -2,8 +2,6 @@
 
 
 
-
-
 # Realistic Ocean Simulation
 ![overview](img/overview.png)
 
@@ -103,7 +101,7 @@ Where :
  * k is the length of the wave vector.
 
 This equation is responsible for animating the waves over time. The complex conjugate term ensures breaking waves by propagating waves "to the left" and "to the right. The dispersion relation is an expression that relates the wave vector to the frequency, and it's based on real physics models of ocean water.
-Now, we want to show how to get in the initial value of the spectrum, to do this, it's required to use an oceanographic model to get the average of this variable, that is:
+Now, we want to show how to get in the initial value of the spectrum, to do this, it's required to use an oceanographic model to get the average value of this variable, that is:
  
 $$
 P_h(\pmb{k}) = \langle |\tilde h^*(\pmb{k},t)|^2 \rangle

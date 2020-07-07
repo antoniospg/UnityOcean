@@ -3,6 +3,7 @@
 
 
 
+
 # Realistic Ocean Simulation
 ![overview](img/overview.png)
 
@@ -26,7 +27,7 @@ $$
 h(\pmb{x}, t) = \sum_{\pmb{k}} \tilde h(\pmb{x},t).exp(i\pmb{k.x})
 $$
 
-where **k** is the wave vector and can be defined as:
+Where **k** is the wave vector and can be defined as:
 
 $$
 \pmb{k} = (k_x, k_z)
@@ -36,7 +37,7 @@ k_x = \frac{2\pi n}{L_x}
 k_z = \frac{2\pi m}{L_z}
 $$
 
-where:
+Where:
 
 $$
 -\frac{N}{2} \leq  n \leq \frac{N}{2}
@@ -44,7 +45,7 @@ $$
 -\frac{M}{2} \leq  m \leq \frac{M}{2}
 $$
 
-but, for most of our work, we deal with variables i and j in different domains:
+But, for most of our work, we deal with variables i and j in different domains:
 
 $$
 0 \leq i <N
@@ -52,7 +53,7 @@ $$
 0 \leq j <M
 $$
 
-so, we can make the transformation:
+So, we can make the transformation:
 
 $$
 n = i - \frac{N}{2}
@@ -73,7 +74,7 @@ h(x,z, t) =\sum_{i = 0}^{N-1} \sum_{j = 0}^{M-1} \tilde h(i - \frac{N}{2},j - \f
 $$
 
 ## The FFT
-To compute the Fourier Transform, we need to calculate the summation in the previous section; this requires a complexity of O(n²) for a 1-D Fourier Transform, which is terrible, especially when we need to perform 2-D operations in a real-time system. The best approach is using the FFT(Fast Fourier Transform) algorithm, which implements the calculation with an O(nlog(n)) complexity for 1-D data. The algorithm is quite complicated, but essentially, for a RADIX-2 FFT, it splits recursively into half the data, performing calculations using the cyclic property of the n-th roots of unity, this way, avoiding unnecessary calculations. Above is a simple example of the algorithm for 1-D data with eight elements; the peculiar structure of this graph also gives the name "Butterfly Algorithm" to the FFT.
+To compute the Fourier Transform, we need to calculate the summation in the previous section; this requires a complexity of O(n²) for a 1-D Fourier Transform, which is terrible, especially when we need to perform 2-D operations in a real-time system. The best approach is using the FFT(Fast Fourier Transform) algorithm, which implements the calculation with an O(nlog(n)) complexity for 1-D data. The algorithm is quite complicated, but essentially, for a Radix-2 FFT, it splits recursively into half the data, performing calculations using the cyclic property of the n-th roots of unity, this way, avoiding unnecessary calculations. Above is a simple example of the algorithm for 1-D data with eight elements; the peculiar structure of this graph also gives the name "Butterfly Algorithm" to the FFT.
 
 ![](img/fftsample.gif) 
 
@@ -95,15 +96,14 @@ $$
 \tilde h(\pmb{k},t) = \tilde h_o(\pmb{k})exp(i\omega(\pmb{k})t) + \tilde h_o^*(\pmb{-k})exp(-i\omega(\pmb{k})t)
 $$
 
-where :
+Where :
 * $$ \tilde h_o(\pmb{k}) $$ is the expression of the initial value at time t = 0.
 *  $$ \tilde h_o^*(\pmb{-k}) $$ is the complex conjugate of $$ \tilde h_o(\pmb{-k}) $$.
 * $$ \omega(\pmb{k}) $$ is the dispertion relation, given by: $$ \omega(k) = \sqrt{gk} $$.
  * k is the length of the wave vector.
 
 This equation is responsible for animating the waves over time. The complex conjugate term ensures breaking waves by propagating waves "to the left" and "to the right. The dispersion relation is an expression that relates the wave vector to the frequency, and it's based on real physics models of ocean water.
-
-Now, we want to show how to get in the initial value of the spectrum, to do this, it's required to use an oceanographic model to get the mean square of this variable, that is:
+Now, we want to show how to get in the initial value of the spectrum, to do this, it's required to use an oceanographic model to get the average of this variable, that is:
  
 $$
 P_h(\pmb{k}) = \langle |\tilde h^*(\pmb{k},t)|^2 \rangle
@@ -117,13 +117,13 @@ P_h(\pmb{k}) = A\frac{exp(-1/(kL)^2)}{k^4} |\hat{\pmb{k}}.\hat{\pmb{v}}|^2
 L= \frac{v²}{g}
 $$
 
-if you want to suppress waves smaller than a small length l << L, just add this multiplicative factor to the Phillips Spectrum:
+If you want to suppress waves smaller than a small length l << L, just add this multiplicative factor to the Phillips Spectrum:
 
 $$
 exp(-(kl)²)
 $$
 
-where:
+Where:
 * A is a numeric constant.
 * **k** is the wave vector.
 * g is the gravitational constant.
@@ -135,7 +135,7 @@ $$
 \tilde h_o(\pmb{k}) = \frac{(\xi_r + i\xi_i)}{\sqrt{2}} \sqrt{P_h(\pmb{k})}
 $$
 
-where $$ \xi_r $$ and $$ \xi_i $$ comes from random numbers of a gaussian distribution with mean zero and standard deviation 1.
+Where $$ \xi_r $$ and $$ \xi_i $$ comes from random numbers of a gaussian distribution with mean zero and standard deviation 1.
 
 After all of that, we can obtain the first version of the ocean surface:
 
@@ -215,7 +215,7 @@ $$
 R(\theta_i, \theta_t) = \left(\frac{n_1cos(\theta_i) - n_2cos(\theta_t)}{n_1cos(\theta_i) + n_2cos(\theta_t)}\right)^2
 $$
 
-where:
+Where:
 * $$ \theta_i $$ is the incident ray.
 * $$ \theta_t $$ is the transmitted ray.
 * $$ n_1 $$ is the index of refraction of air.

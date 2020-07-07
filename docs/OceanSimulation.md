@@ -1,6 +1,7 @@
 <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
 
 
+
 # Realistic Ocean Simulation
 ![overview](img/overview.png)
 
@@ -11,7 +12,7 @@ In this project, I will implement the statistical wave model from the equations 
 The main principle of Ocean rendering is that it can be modeled very well by thinking of it as a sum of "infinite" waves at different amplitudes traveling in different directions. These waves aren't randomly chosen; they come from using statistical-empirical models of the ocean, based on oceanographic research. In this article, I will show how to recreate and animate the ocean surface and add additional visual features like foam and illumination.
 
 ## Waves and the Fourier Tansform
-This technique consists of writing an inverse Fourier transform on the frequency spectrum of the ocean height field to get the space domain representation of this same field, at each time t. For every frame we calculate, for each pair (x,z) in a rectangular grid the y component of this point, which represents the ocean height at that location.
+This technique consists of writing an inverse Fourier transform on the Fourier domain of the ocean height field to get the space domain representation of this same field, at each time t. For every frame we calculate, for each pair (x,z) in a rectangular grid the y component of this point, which represents the ocean height at that location.
 Given the ocean height field function in the spatial frequency domain $$ \tilde h(\pmb{k}, t) $$, to find the original function in the spatial domain, we need to perform the inverse Fourier Transform, that is, evaluate the integral above (note that we suppress the twiddle factor):
 
 $$
@@ -87,14 +88,14 @@ $$
 h(\pmb{x}, t) = \sum_{\pmb{k}} \tilde h(\pmb{x},t).exp(i\pmb{k.x})
 $$
 
-The expression of the frequencies is given by:
+The expression of the coefficients is given by:
 
 $$
 \tilde h(\pmb{k},t) = \tilde h_o(\pmb{k})exp(i\omega(\pmb{k})t) + \tilde h_o^*(\pmb{-k})exp(-i\omega(\pmb{k})t)
 $$
 
 where :
-* $$ \tilde h_o(\pmb{k}) $$ is the expression of the initial value of the spectrum at time t = 0.
+* $$ \tilde h_o(\pmb{k}) $$ is the expression of the initial value at time t = 0.
 *  $$ \tilde h_o^*(\pmb{-k}) $$ is the complex conjugate of $$ \tilde h_o(\pmb{-k}) $$.
 * $$ \omega(\pmb{k}) $$ is the dispertion relation, given by: $$ \omega(k) = \sqrt{gk} $$.
  * k is the length of the wave vector.
@@ -150,7 +151,7 @@ $$
 $$
 
 ### Horizontal Displacement
-At that point, our surface has rounded peak waves that cannot represent a real ocean, to make sharpened peaks, it's useful to do an additional calculation of the horizontals displacements. Ocean waves aren't just caused by oscillations in the y-direction,  there also exists oscillations in the horizontal directions, to compute these, we need to project the spectrum in the z and x-axis, that is, finding a horizontal displacement given by:
+At that point, our surface has rounded peak waves that cannot represent a real ocean, to make sharpened peaks, it's useful to do an additional calculation of the horizontals displacements. Ocean waves aren't just caused by oscillations in the y-direction,  there also exists oscillations in the horizontal directions, to compute these, we need to decompose the spectrum in the z and x-axis, that is, finding a horizontal displacement given by:
 
 $$
 \pmb{D}(\pmb{x},t) = \sum_{\pmb{k}}-i\frac{\pmb{k}}{k}\tilde h(\pmb{k},t)exp(i\pmb{k.x})
@@ -171,7 +172,7 @@ The final result of applying the displacement vector in the original waves can b
 ## Ocean effects
 
 ### Foam 
-To calculate the foam, we need to know where the waves fold into themselves. A good way to measure this is calculating the jacobian of the displacement map, the jacobian tells us whenever a transformation is unique or not, when J = 0, it means that when we apply the displacement map to the original point of the grid, two points assume the same value. So the jacobian is a useful parameter to determine if the waves are folding into themselves, primarily we want to know where J < 0 and apply the foam to these points. 
+To calculate the foam, we need to know where the waves fold into themselves. A good way to measure this is calculating the jacobian of the displacement map, the jacobian tells us whenever a transformation is unique or not, when J = 0, it means that when we apply the displacement map to the original point of the grid, two points assume the same value. So the jacobian is a useful parameter to determine if the waves are folding into themselves, primarily we want to know where J <= 0 and apply the foam to these points. 
 
 $$
 J_{xx} = 1 + \lambda\frac{\partial{\pmb{D}_x(\pmb{x})}}{\partial{x}}
@@ -186,10 +187,10 @@ $$
 To apply the foam to the waves, we need to calculate a folding map to serve as a mask to a custom foam texture. To create this mask, we first need to calculate a texture with the number of pixels equal to the number of points in the grid. That is, map the grid points into pixels. After that, we calculate the intensity of the foam for every position, using the formula:
 
 $$
-I = clamp(0,1,J_{max} - J(\pmb{x}))
+I = clamp(0,1,M - J(\pmb{x}))
 $$
 
-Doing this will clamp the value $$ J_{max} - J(\pmb{x}) $$ between zero and one. Instead of drawing the foam when  J < 0, it is better to choose a custom value as a threshold, when $$J < J_{max} $$. So, we use the quantity $$ J_{max} - J(\pmb{x})$$ to estimate the intensity of the foam. Figure 5 shows how the surface behaves for different values of J.
+Doing this will clamp the value $$ M - J(\pmb{x}) $$ between zero and one. Instead of drawing the foam when  J <= 0, it is better to choose a custom value as a threshold, when $$J < M $$. So, we use the quantity $$ M - J(\pmb{x})$$ to estimate the intensity of the foam. Figure 5 shows how the surface behaves for different values of J.
 
 ![](img/jacobiangraph.jpg)
 

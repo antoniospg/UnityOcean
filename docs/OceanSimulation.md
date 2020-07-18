@@ -214,8 +214,8 @@ R(\theta_i, \theta_t) = \left(\frac{n_1cos(\theta_i) - n_2cos(\theta_t)}{n_1cos(
 $$
 
 Where:
-* $$ \theta_i $$ is the incident ray.
-* $$ \theta_t $$ is the transmitted ray.
+* $$ \theta_i $$ is the incident angle.
+* $$ \theta_t $$ is the transmitted angle.
 * $$ n_1 $$ is the index of refraction of air.
 *  $$ n_2 $$ is the index of refraction of water.
 

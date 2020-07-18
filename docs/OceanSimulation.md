@@ -11,7 +11,7 @@
 In this project, I will implement the statistical wave model from the equations in Tessendorf's paper[1] on simulating ocean water. The ocean rendering technique in this article applies heightmap generation by summing a vast number of waves using the Fast Fourier Transform, with user-controllable size and resolution, and which can be tiled seamlessly over a larger domain.
 The main principle of Ocean rendering is that it can be modeled very well by thinking of it as a sum of "infinite" waves at different amplitudes traveling in different directions. These waves aren't randomly chosen; they come from using statistical-empirical models of the ocean, based on oceanographic research. In this article, I will show how to recreate and animate the ocean surface and add additional visual features like foam and illumination.
 
-## Waves and the Fourier Tansform
+## Waves and the Fourier Transform
 This technique consists of writing an inverse Fourier transform on the Fourier domain of the ocean height field to get the space domain representation of this same field, at each time t. For every frame we calculate, for each pair (x,z) in a rectangular grid the y component of this point, which represents the ocean height at that location.
 Given the ocean height field function in the spatial frequency domain $$ \tilde h(\pmb{k}, t) $$, to find the original function in the spatial domain, we need to perform the inverse Fourier Transform, that is, evaluate the integral above:
 
@@ -143,7 +143,7 @@ After all of that, we can obtain the first version of the ocean surface:
 
 ## Additional calculations 
 ### Normals
-Due to illuminations effects, we need to calculate the normals of the ocean surface at each point. To do this, instead of performing another FFT, to save processing, we will simply do a central differentiation over the height field, to obtain the gradient $$ \epsilon(\pmb{x},t) = \nabla h(\pmb{x},t) $$ of the function. With the gradient, it's easy to find the normals, using the relation above:
+Due to illumination effects, we need to calculate the normals of the ocean surface at each point. To do this, instead of performing another FFT, to save processing, we will simply do a central differentiation over the height field, to obtain the gradient $$ \epsilon(\pmb{x},t) = \nabla h(\pmb{x},t) $$ of the function. With the gradient, it's easy to find the normals, using the relation above:
 
 $$
 \hat{n}_s(\pmb{x},t) = \frac{\hat{y} - \epsilon(\pmb{x},t)}{\sqrt{1+\epsilon^2(\pmb{x},t)}}

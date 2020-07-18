@@ -53,9 +53,6 @@ namespace Ocean{
       frTable.anisoLevel = 0;
 
       foldingTable = new Texture2D(N, N, TextureFormat.RGBAFloat, false);
-      //foldingTable.filterMode = FilterMode.Bilinear;
-      //foldingTable.wrapMode = TextureWrapMode.Clamp;
-      //foldingTable.anisoLevel = 0;
 
       hMap = new float[N,N];
       dispMap = new Vector2[N,N];
@@ -167,21 +164,21 @@ namespace Ocean{
 			return ph;
 
     }
-
+    //Retorna expressão do espectro inicial
     public Vector2 FSpectrum(Vector2 K){
 
       Vector2 random = NextGaussian();
       float ph = Mathf.Sqrt(PhillSpec(K)/2.0f);
       return random*ph;
     }
-
+    //calcula wave vector
     public Vector2 calcWaveVector(int n, int m){
 
       float Kx = Mathf.PI*2*((2*n - N)/2)/L;
       float Kz = Mathf.PI*2*((2*m - N)/2)/L;
       return new Vector2(Kx, Kz);
     }
-
+    //calcula as amplitudes atualizadas em cada tempo t
     public Vector2 FAmplitudes(Vector2 spec, Vector2 spec_conj,float disp, float t){
 
       Vector2 z = ObtainPolar(1,disp*t);
@@ -189,7 +186,7 @@ namespace Ocean{
 
       return Complex_Product(spec,z) + Complex_Product(spec_conj, z_conj);
     }
-
+    //pré calcular as constantes
     public void Init(){
 
       for(int i = 0; i < N; i++){

@@ -58,13 +58,10 @@ public class CreateMesh : MonoBehaviour
       RunOnPool(time);
       //ThreadPool.QueueUserWorkItem(new WaitCallback(RunOnPool), time);
 
-      /*
-      byte[] bytes = hMap.EncodeToPNG();
-
-      File.WriteAllBytes(Application.dataPath + "/../SavedScreen.png", bytes);
-      */
-
+      //setar textura para usar no shader
       m_Renderer.material.SetTexture("_FoldingTable", ocean_utils.foldingTable);
+
+      //salvar em uma imagem para ter feedback
       byte[] bytes = ocean_utils.foldingTable.EncodeToPNG();
 
       File.WriteAllBytes(Application.dataPath + "/../SavedScreen.png", bytes);
